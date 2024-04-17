@@ -1,0 +1,12 @@
+# Configuration file
+# Configuration file
+# Rename this file to config_rep.yaml and update the following settings with your specific credentials
+
+SAST_username: <your_username_here>   # Replace <your_username_here> with your SAST username
+SAST_password: <your_password_here>   # Replace <your_password_here> with your SAST password
+SAST_auth_url: <authentication_endpoint>   # Replace <authentication_endpoint> with your SAST authentication URL
+SAST_api_url: <api_endpoint>               # Replace <api_endpoint> with your SAST API URL
+
+# Example:
+# SAST_auth_url: http://example.com/CxRestAPI/auth/identity/connect/token
+# SAST_api_url: http://example.com/CxRestAPI

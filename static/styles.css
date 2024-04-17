@@ -1,0 +1,94 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f2f2f2;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+main {
+    max-width: 500px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #4CAF50;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #f2f2f2;
+    font-size: 14px;
+    color: #666;
+}
+
+footer p {
+    margin: 5px 0;
+}
+
+.error-message {
+    color: red;
+    margin-bottom: 10px;
+  }
+
+.download-button {
+    display: block; /* make it a block to take full width if needed */
+    margin: 20px auto; /* center the button */
+    background-color: #007BFF; /* a nice blue shade */
+    color: white; /* white text */
+    padding: 12px 24px; /* padding for better touch */
+    border-radius: 5px; /* rounded corners */
+    text-decoration: none; /* remove underline from link */
+    text-align: center; /* center text if needed */
+    width: 50%; /* set a specific width, or use max-width */
+    transition: background-color 0.3s; /* smooth transition for hover effect */
+}
+
+.download-button:hover {
+    background-color: #0056b3; /* darker blue on hover */
+    color: #ffffff;
+}

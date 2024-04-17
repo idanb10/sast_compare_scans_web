@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Checkmarx SAST Scan Comparison</title>
+    <link rel="stylesheet" type="text/css" href="static/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Checkmarx SAST Scan Comparison</h1>
+    </header>
+    <main>
+        <section>
+            {% if error %}
+            <div class="error-message">{{ error }}</div>
+            {% endif %}
+            <form method="POST" action="{{ url_for('compare_scans') }}">
+                <div class="form-group">
+                    <label for="project_name">Project Name (optional):</label>
+                    <input type="text" id="project_name" name="project_name">
+                </div>
+                <div class="form-group">
+                    <label for="old_scan_date">Old Scan Date (DD/MM/YYYY):</label>
+                    <input type="text" id="old_scan_date" name="old_scan_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="new_scan_date">New Scan Date (DD/MM/YYYY):</label>
+                    <input type="text" id="new_scan_date" name="new_scan_date" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit">Compare Scans</button>
+                </div>
+            </form>
+        </section>
+    </main>
+    <footer>
+        <p>Powered by Matrix 2Bsecure, utilizing Checkmarx tools</p>
+    </footer>
+</body>
+</html>
