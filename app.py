@@ -37,15 +37,15 @@ def compare_scans():
     access_token = SAST_api.SAST_get_access_token(SAST_username, SAST_password, SAST_auth_url)
     if not access_token:
         error_message = "Failed to obtain access token."
-        return render_template('index.html', error=error_message)
+        return jsonify({"error": error_message})
     
     if old_scan_date is None or new_scan_date is None:
         error_message = "One or more dates are invalid. Please enter dates in the format DD/MM/YYYY."
-        return render_template('index.html', error=error_message)
+        return jsonify({"error": error_message})
 
     if old_scan_date > new_scan_date:
         error_message = "The old scan date should be earlier than the new scan date."
-        return render_template('index.html', error=error_message)
+        return jsonify({"error": error_message})
 
         
     if project_name:
@@ -57,7 +57,7 @@ def compare_scans():
                 break
         if project_found == False:
             error_message = f"No project named {project_name} was found."
-            return render_template("index.html", error=error_message)
+            return jsonify({"error": error_message})
 
     
     old_scan_date_str = old_scan_date.strftime('%Y-%m-%d')
@@ -65,7 +65,10 @@ def compare_scans():
     
     csv_filename = ""
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-
+    
+    #FOR TESTS, REMOVE LATER
+    #create_sast_comparison.SAST_compare_all_latest_vulnerabilities(SAST_username, SAST_password, SAST_auth_url, SAST_api_url)
+    
     try:
         if project_name:
             old_scan_results, new_scan_results, fixed_vulnerabilities = create_sast_comparison.SAST_compare_two_scans_by_date(SAST_username, SAST_password, \
@@ -95,9 +98,12 @@ def compare_scans():
                         csv_content += "\n"
             csv_filename = f'SAST_Comparison_{old_scan_date_str}_to_{new_scan_date_str}__{timestamp}.csv'
         
-        response = make_response(csv_content)
-        response.headers['Content-Disposition'] = f'attachment; filename={csv_filename}'
-        response.headers['Content-Type'] = 'text/csv'
+        # response = make_response(csv_content)
+        # response.headers['Content-Disposition'] = f'attachment; filename={csv_filename}'
+        # response.headers['Content-Type'] = 'text/csv'
+        # response.set_cookie('end_of_comparison', 'true')
+        # return response
+        response = make_response((csv_content, 200, {'Content-Disposition': f'attachment; filename={csv_filename}', 'Content-Type': 'text/csv'}))
         return response
 
     except Exception as e:

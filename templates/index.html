@@ -1,19 +1,64 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Checkmarx SAST Scan Comparison</title>
     <link rel="stylesheet" type="text/css" href="static/styles.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        function onSubmit() {
+        function onSubmit(event) {
+            event.preventDefault(); // Prevent the default form submission
+    
             const errorDiv = document.querySelector('.error-message');
+            const loadingDiv = document.getElementById('loadingMessage');
+            const successDiv = document.getElementById('successMessage');
+    
             if (errorDiv) {
-                errorDiv.style.display = 'none';  // Hide error message when resubmitting
+                errorDiv.style.display = 'none'; // Hide error message when resubmitting
             }
-            document.getElementById('loadingMessage').style.display = 'block';  // Show loading message
-            
+            loadingDiv.style.display = 'block'; // Show loading message
+            successDiv.style.display = 'none'; // Ensure success message is hidden initially
+    
+            const formData = new FormData(event.target);
+    
+            $.ajax({
+                url: "{{ url_for('compare_scans') }}",
+                method: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response, status, xhr) {
+                    loadingDiv.style.display = 'none'; // Hide loading message
+    
+                    if (response.error) {
+                        // If there is an error message in the response, display it
+                        errorDiv.textContent = response.error;
+                        errorDiv.style.display = 'block';
+                    } else {
+                        // If the response is successful, show the success message and trigger the file download
+                        successDiv.style.display = 'block'; // Show success message
+    
+                        // Extract the filename from the response headers
+                        const contentDisposition = xhr.getResponseHeader('Content-Disposition');
+                        const filename = contentDisposition.split('filename=')[1].trim().replace(/"/g, '');
+    
+                        // Create a temporary link element to trigger the file download
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(new Blob([response]));
+                        link.download = filename;
+                        link.click();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    loadingDiv.style.display = 'none'; // Hide loading message
+                    errorDiv.textContent = 'An error occurred during scan comparison.';
+                    errorDiv.style.display = 'block'; // Show error message
+                }
+            });
         }
     </script>
 </head>
+
 <body>
     <header>
         <h1>Checkmarx SAST Scan Comparison</h1>
@@ -22,7 +67,9 @@
         <section>
             <div class="error-message" style="display: {{ 'block' if error else 'none' }}">{{ error }}</div>
             <div id="loadingMessage" style="display: none;">Loading, Please wait...</div>
-            <form method="POST" action="{{ url_for('compare_scans') }}" onsubmit="onSubmit()">
+            <div id="successMessage" style="display: none;">Scan Comparison Successful!</div>
+
+            <form method="POST" action="{{ url_for('compare_scans') }}" onsubmit="onSubmit(event)">
                 <div class="form-group">
                     <label for="project_name">Project Name (optional):</label>
                     <input type="text" id="project_name" name="project_name">
@@ -42,4 +89,5 @@
         </section>
     </main>
 </body>
+
 </html>

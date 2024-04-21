@@ -91,23 +91,32 @@ def SAST_get_scan_id_by_date(access_token, project_id, SAST_api_url, scan_date, 
         print(f"Exception: SAST_get_scan_id_by_date: {e}")
         return None, None
     
-def SAST_list_scan_vulnerabilities_with_scan_id(access_token, SAST_api_url, scan_id):        
+def SAST_list_scan_vulnerabilities_with_scan_id(access_token, SAST_api_url, scan_id, simplified=True):        
     try:
-      
-        scan_results_url = f"{SAST_api_url}/sast/scans/{scan_id}/resultsStatistics"
         
         headers = {'Authorization': f'Bearer {access_token}'}
         
-        response = requests.get(scan_results_url, headers=headers)
-        response.raise_for_status()
-        scan_results = response.json()
-        
-        simplified_scan_results = {
-            'High': scan_results.get('highSeverity', 0),
-            'Medium': scan_results.get('mediumSeverity', 0),
-            'Low': scan_results.get('lowSeverity', 0)
-        }
-        return simplified_scan_results
+
+        if simplified:
+            scan_results_url = f"{SAST_api_url}/sast/scans/{scan_id}/resultsStatistics"
+                    
+            response = requests.get(scan_results_url, headers=headers)
+            response.raise_for_status()
+            scan_results = response.json()
+            
+            simplified_scan_results = {
+                'High': scan_results.get('highSeverity', 0),
+                'Medium': scan_results.get('mediumSeverity', 0),
+                'Low': scan_results.get('lowSeverity', 0)
+            }
+            return simplified_scan_results
+        else:
+            scan_results_url = f"{SAST_api_url}/sast/scans/{scan_id}"
+                    
+            response = requests.get(scan_results_url, headers=headers)
+            response.raise_for_status()
+            scan_results = response.json()
+            return scan_results
         
     except Exception as e:
         print(f"Exception: {e}")
@@ -122,3 +131,34 @@ def SAST_compare_scan_vulnerabilities(old_scan_results, new_scan_results):
     }
     return fixed
 
+
+
+
+def SAST_get_project_latest_scan_id(access_token, project_name, SAST_api_url):
+    try:
+        projId = SAST_get_project_ID(access_token, project_name, SAST_api_url)
+        if projId == 0:
+            return 0
+        
+        url = f"{SAST_api_url}/sast/scans?projectId={projId}&last=1"
+
+        headers = {
+            'Authorization': f'Bearer {access_token}'
+        }
+
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Raise exception for HTTP errors
+        
+        response_json = response.json()
+        lastScanId = response_json[0]['id']
+    except Exception as e:
+        print(f"Exception: SAST_get_project_latest_scan_id: {e}")
+        return ""
+    else:
+        print(f'SAST_get_project_latest_scan_id scan_id= {lastScanId}')
+        return lastScanId
+    
+def SAST_get_entire_scan_by_id(access_token, SAST_api_url, scan_id):
+    ...
+    
+    
