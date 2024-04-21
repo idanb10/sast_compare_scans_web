@@ -1,5 +1,4 @@
 # Configuration file
-# Configuration file
 # Rename this file to config_rep.yaml and update the following settings with your specific credentials
 
 SAST_username: <your_username_here>   # Replace <your_username_here> with your SAST username

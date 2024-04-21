@@ -3,6 +3,16 @@
 <head>
     <title>Checkmarx SAST Scan Comparison</title>
     <link rel="stylesheet" type="text/css" href="static/styles.css">
+    <script>
+        function onSubmit() {
+            const errorDiv = document.querySelector('.error-message');
+            if (errorDiv) {
+                errorDiv.style.display = 'none';  // Hide error message when resubmitting
+            }
+            document.getElementById('loadingMessage').style.display = 'block';  // Show loading message
+            
+        }
+    </script>
 </head>
 <body>
     <header>
@@ -10,10 +20,9 @@
     </header>
     <main>
         <section>
-            {% if error %}
-            <div class="error-message">{{ error }}</div>
-            {% endif %}
-            <form method="POST" action="{{ url_for('compare_scans') }}">
+            <div class="error-message" style="display: {{ 'block' if error else 'none' }}">{{ error }}</div>
+            <div id="loadingMessage" style="display: none;">Loading, Please wait...</div>
+            <form method="POST" action="{{ url_for('compare_scans') }}" onsubmit="onSubmit()">
                 <div class="form-group">
                     <label for="project_name">Project Name (optional):</label>
                     <input type="text" id="project_name" name="project_name">
@@ -32,8 +41,5 @@
             </form>
         </section>
     </main>
-    <footer>
-        <p>Powered by Matrix 2Bsecure, utilizing Checkmarx tools</p>
-    </footer>
 </body>
 </html>

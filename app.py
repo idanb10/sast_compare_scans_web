@@ -5,8 +5,6 @@ import SAST_api
 import os
 import datetime
 
-TEMP_DIR = "temp"
-os.makedirs(TEMP_DIR, exist_ok=True)
 
 with open('config_rep.yaml', 'r') as file:
     config = yaml.safe_load(file)
@@ -36,6 +34,11 @@ def compare_scans():
     old_scan_date = create_sast_comparison.SAST_validate_and_parse_date(old_scan_date_str)
     new_scan_date = create_sast_comparison.SAST_validate_and_parse_date(new_scan_date_str)
     
+    access_token = SAST_api.SAST_get_access_token(SAST_username, SAST_password, SAST_auth_url)
+    if not access_token:
+        error_message = "Failed to obtain access token."
+        return render_template('index.html', error=error_message)
+    
     if old_scan_date is None or new_scan_date is None:
         error_message = "One or more dates are invalid. Please enter dates in the format DD/MM/YYYY."
         return render_template('index.html', error=error_message)
@@ -43,8 +46,8 @@ def compare_scans():
     if old_scan_date > new_scan_date:
         error_message = "The old scan date should be earlier than the new scan date."
         return render_template('index.html', error=error_message)
-    
-    access_token = SAST_api.SAST_get_access_token(SAST_username, SAST_password, SAST_auth_url)
+
+        
     if project_name:
         project_found = False
         projects = SAST_api.SAST_get_projects(access_token=access_token, SAST_api_url=SAST_api_url)
@@ -91,28 +94,15 @@ def compare_scans():
                     if not csv_content.endswith("\n"):
                         csv_content += "\n"
             csv_filename = f'SAST_Comparison_{old_scan_date_str}_to_{new_scan_date_str}__{timestamp}.csv'
-            
-        # For making a dynamic, temporary CSV file and avoiding permanent file storage on the server, uncomment the next 4 lines to enable direct download
-        # and remove the subsequent block that writes to a server-side file and returns a template with a download link.
-        # response = make_response(csv_content)
-        # response.headers['Content-Disposition'] = f'attachment; filename={csv_filename}'
-        # response.headers['Content-Type'] = 'text/csv'
-        # return response
-
-        # Instead, the following block writes the CSV content to a temporary file and serves it via a downloadable link.
-
-        file_path = os.path.join(TEMP_DIR, csv_filename)
-        with open(file_path, 'w', newline='') as f:
-            f.write(csv_content)
-        return render_template('download.html', file_name=csv_filename)
+        
+        response = make_response(csv_content)
+        response.headers['Content-Disposition'] = f'attachment; filename={csv_filename}'
+        response.headers['Content-Type'] = 'text/csv'
+        return response
 
     except Exception as e:
         error_message = str(e)
         return render_template('index.html', error=error_message)
-    
-@app.route('/download/<filename>')
-def download_file(filename):
-    return send_from_directory(directory=TEMP_DIR, path=filename, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=True)

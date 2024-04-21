@@ -101,3 +101,6 @@ def SAST_validate_and_parse_date(date_str):
     except (ValueError, TypeError):
         print(f"Invalid date: {date_str}. Please provide a valid date in the format 'DD/MM/YYYY'.")
         return None
+    
+def SAST_compare_all_latest_vulnerabilities():
+    ...

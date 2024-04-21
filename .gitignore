@@ -1,3 +1,5 @@
 __pycache__/
 venv/
+temp/
 *.csv
+config_rep.yaml
