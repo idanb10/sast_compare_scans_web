@@ -19,7 +19,7 @@ def SAST_get_access_token(SAST_username, SAST_password, SAST_auth_url):
 
         response = requests.post(SAST_auth_url, headers=headers, data=payload)
         response.raise_for_status()  # Raise exception for HTTP errors
-        #print(f'get_SAST_access_token - token = {response.text}')
+        print(f'get_SAST_access_token - token = {response.text}')
         access_token = response.json()['access_token']
         return access_token
     except requests.exceptions.RequestException as e:

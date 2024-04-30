@@ -3,3 +3,4 @@ venv/
 temp/
 *.csv
 config_rep.yaml
+*.log

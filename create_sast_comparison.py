@@ -1,3 +1,5 @@
+#create_sast_comparison.py
+
 import re
 import dateutil.parser
 import SAST_api
@@ -6,10 +8,11 @@ import csv
 import datetime
 import dateutil
 import io
+import logging
 
-def SAST_compare_two_scans_by_date(SAST_username, SAST_password, SAST_auth_url, SAST_api_url, project_name, old_scan_date, new_scan_date):
+def SAST_compare_two_scans_by_date(access_token, SAST_api_url, project_name, old_scan_date, new_scan_date):
     try:
-        access_token = SAST_api.SAST_get_access_token(SAST_username, SAST_password, SAST_auth_url)
+        
         if not access_token:
             raise Exception("Failed to obtain access token")
         
@@ -18,6 +21,8 @@ def SAST_compare_two_scans_by_date(SAST_username, SAST_password, SAST_auth_url, 
             print(f"Project '{project_name}' does not exist under the credentials that you used to access the application.")
             raise Exception(f"Project {project_name} does not exist under your username")
         
+        print(f"create_sast_comparison.SAST_compare_two_scans_by_date : Comparing scans for project : {project_name}")
+            
         old_scan_id, old_scan_real_date = SAST_api.SAST_get_scan_id_by_date(access_token, project_id, SAST_api_url, old_scan_date, search_direction='next')
         new_scan_id, new_scan_real_date = SAST_api.SAST_get_scan_id_by_date(access_token, project_id, SAST_api_url, new_scan_date, search_direction='last')
         
@@ -35,7 +40,7 @@ def SAST_compare_two_scans_by_date(SAST_username, SAST_password, SAST_auth_url, 
         
         fixed_vulnerabilities = SAST_api.SAST_compare_scan_vulnerabilities(old_scan_results, new_scan_results)
         print(f"create_sast_comparison.SAST_compare_two_scans_by_date : Fixed vulnerabilities {fixed_vulnerabilities}")
-        
+        print(f"create_sast_comparison.SAST_compare_two_scans_by_date : Scans comparison for project '{project_name}' successful !")
         return old_scan_results, new_scan_results, fixed_vulnerabilities
     
         # write_scan_results_to_csv(project_name, old_scan_date, \
@@ -46,20 +51,18 @@ def SAST_compare_two_scans_by_date(SAST_username, SAST_password, SAST_auth_url, 
         print(f"Exception: {e}")
         return None, None, None
     
-def SAST_compare_scans_across_all_projects(SAST_username, SAST_password, SAST_auth_url, SAST_api_url, old_scan_date, new_scan_date):
-    access_token = SAST_api.SAST_get_access_token(SAST_username, SAST_password, SAST_auth_url)
-    if not access_token:
-        raise Exception("Failed to obtain access token")
-
+def SAST_compare_scans_across_all_projects(access_token, SAST_api_url, old_scan_date, new_scan_date):
+    
+    
     projects = SAST_api.SAST_get_projects(access_token, SAST_api_url)
     all_old_scan_results = {}
     all_new_scan_results = {}
     all_fixed_vulnerabilities = {}
+    
 
     for project in projects:
         project_name = project['name']
-        print(f"Comparing scans for project: {project_name}")
-        old_scan_results, new_scan_results, fixed_vulnerabilities = SAST_compare_two_scans_by_date(SAST_username, SAST_password, SAST_auth_url, SAST_api_url, project_name, old_scan_date, new_scan_date)
+        old_scan_results, new_scan_results, fixed_vulnerabilities = SAST_compare_two_scans_by_date(access_token, SAST_api_url, project_name, old_scan_date, new_scan_date)
 
         all_old_scan_results[project_name] = old_scan_results
         all_new_scan_results[project_name] = new_scan_results

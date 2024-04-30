@@ -1,10 +1,14 @@
+#app.py
+
 from flask import Flask, jsonify, make_response, render_template, request, send_from_directory
 import yaml
 import create_sast_comparison
 import SAST_api
 import os
 import datetime
+import logging
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename='app.log', filemode='a')
 
 with open('config_rep.yaml', 'r') as file:
     config = yaml.safe_load(file)
@@ -27,9 +31,12 @@ def index():
 
 @app.route('/compare', methods=['POST'])
 def compare_scans():
+    logging.info(f"Handling request : compare_scans")
+
     project_name = request.form['project_name']
     old_scan_date_str = request.form['old_scan_date']
     new_scan_date_str = request.form['new_scan_date']
+    
 
     old_scan_date = create_sast_comparison.SAST_validate_and_parse_date(old_scan_date_str)
     new_scan_date = create_sast_comparison.SAST_validate_and_parse_date(new_scan_date_str)
@@ -37,14 +44,17 @@ def compare_scans():
     access_token = SAST_api.SAST_get_access_token(SAST_username, SAST_password, SAST_auth_url)
     if not access_token:
         error_message = "Failed to obtain access token."
+        print(error_message)
         return jsonify({"error": error_message})
     
     if old_scan_date is None or new_scan_date is None:
         error_message = "One or more dates are invalid. Please enter dates in the format DD/MM/YYYY."
+        print(error_message)
         return jsonify({"error": error_message})
 
     if old_scan_date > new_scan_date:
         error_message = "The old scan date should be earlier than the new scan date."
+        print(error_message)
         return jsonify({"error": error_message})
 
         
@@ -56,7 +66,8 @@ def compare_scans():
                 project_found = True
                 break
         if project_found == False:
-            error_message = f"No project named {project_name} was found."
+            error_message = f"No project named '{project_name}' was found."
+            print(error_message)
             return jsonify({"error": error_message})
 
     
@@ -71,16 +82,16 @@ def compare_scans():
     
     try:
         if project_name:
-            old_scan_results, new_scan_results, fixed_vulnerabilities = create_sast_comparison.SAST_compare_two_scans_by_date(SAST_username, SAST_password, \
-                SAST_auth_url, SAST_api_url, project_name, old_scan_date_str, new_scan_date_str)
+            old_scan_results, new_scan_results, fixed_vulnerabilities = create_sast_comparison.SAST_compare_two_scans_by_date(access_token, SAST_api_url, \
+                project_name, old_scan_date_str, new_scan_date_str)
             if old_scan_results is None or new_scan_results is None or fixed_vulnerabilities is None:
                 raise Exception("Failed to compare scans for the specified project.")
             csv_content = create_sast_comparison.SAST_write_scan_results_to_csv(project_name, old_scan_date_str, new_scan_date_str, old_scan_results,\
                 new_scan_results, fixed_vulnerabilities, write_headers=True)
             csv_filename = f'SAST_Comparison_for_Project_{project_name}_{old_scan_date_str}_to_{new_scan_date_str}__{timestamp}.csv'
         else:
-            all_old_scan_results, all_new_scan_results, all_fixed_vulnerabilities = create_sast_comparison.SAST_compare_scans_across_all_projects(SAST_username, \
-                SAST_password, SAST_auth_url, SAST_api_url, old_scan_date_str, new_scan_date_str)
+            all_old_scan_results, all_new_scan_results, all_fixed_vulnerabilities = create_sast_comparison.SAST_compare_scans_across_all_projects(access_token,\
+                SAST_api_url, old_scan_date_str, new_scan_date_str)
             if not all_old_scan_results or not all_new_scan_results or not all_fixed_vulnerabilities:
                 raise Exception("Failed to compare scans across all projects.")
             
