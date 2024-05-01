@@ -15,44 +15,43 @@ def SAST_compare_two_scans_by_date(access_token, SAST_api_url, project_name, old
         
         project_id = SAST_api.SAST_get_project_ID(access_token, project_name, SAST_api_url)
         if project_id == 0:
-            print(f"Project '{project_name}' does not exist under the credentials that you used to access the application.")
-            raise Exception(f"Project {project_name} does not exist under your username")
+            error_message = f"Project '{project_name}' does not exist under the credentials that you used to access the application."
+            logging.error(f"create_sast_comparison.SAST_compare_two_scans_by_date: {error_message}")
+            print(error_message)
+            raise Exception(error_message)
         
-        logging.info(f"create_sast_comparison.SAST_compare_two_scans_by_date : Comparing scans for project : '{project_name}', id = {project_id}")
+        logging.info(f"create_sast_comparison.SAST_compare_two_scans_by_date: Comparing scans for project : '{project_name}', id = {project_id}")
 
-        print(f"create_sast_comparison.SAST_compare_two_scans_by_date : Comparing scans for project : {project_name}")
+        print(f"create_sast_comparison.SAST_compare_two_scans_by_date: Comparing scans for project : '{project_name}'")
             
         old_scan_id, old_scan_real_date = SAST_api.SAST_get_scan_id_by_date(access_token, project_id, SAST_api_url, old_scan_date, search_direction='next')
         new_scan_id, new_scan_real_date = SAST_api.SAST_get_scan_id_by_date(access_token, project_id, SAST_api_url, new_scan_date, search_direction='last')
         
-        logging.info(f"create_sast_comparison.SAST_compare_two_scans_by_date: Old scan (closest to {old_scan_date}): date = {old_scan_real_date}, id = {old_scan_id}.\nNew scan (closest to {new_scan_date}): date = {new_scan_real_date}, id = {new_scan_id}")
+        logging.info(f"create_sast_comparison.SAST_compare_two_scans_by_date:\nOld scan (closest to {old_scan_date}): date = {old_scan_real_date}, id = {old_scan_id}.\nNew scan (closest to {new_scan_date}): date = {new_scan_real_date}, id = {new_scan_id}")
         
         if old_scan_id == new_scan_id:
             error_message = f"The same scan cannot be used for both comparison points.\nPlease select a different date range if you wish to compare two scans for project '{project_name}'."
-            logging.error(f"create_sast_comparison.SAST_compare_two_scans_by_date : {error_message}")
+            logging.warning(f"create_sast_comparison.SAST_compare_two_scans_by_date : {error_message}")
             raise Exception(error_message)
         
         if old_scan_id is None or new_scan_id is None:
-            error_message = f"Failed to find scans for both dates for project {project_name}. Make sure you have at least two scans to compare in this date range."
-            logging.error(f"create_sast_comparison.SAST_compare_two_scans_by_date : {error_message}")
+            error_message = f"Failed to find scans for both dates for project '{project_name}'.\nMake sure you have at least two scans to compare in the specified date range."
+            logging.warning(f"create_sast_comparison.SAST_compare_two_scans_by_date : {error_message}")
             raise Exception(error_message)
             
         old_scan_results = SAST_api.SAST_list_scan_vulnerabilities_with_scan_id(access_token, SAST_api_url, old_scan_id)
         new_scan_results = SAST_api.SAST_list_scan_vulnerabilities_with_scan_id(access_token, SAST_api_url, new_scan_id)
         
-        print(f"create_sast_comparison.SAST_compare_two_scans_by_date : Old scan on {old_scan_real_date} results - {old_scan_results}")
-        print(f"create_sast_comparison.SAST_compare_two_scans_by_date : New scan on {new_scan_real_date} results - {new_scan_results}")
+        print(f"create_sast_comparison.SAST_compare_two_scans_by_date: Old scan on {old_scan_real_date} results - {old_scan_results}")
+        print(f"create_sast_comparison.SAST_compare_two_scans_by_date: New scan on {new_scan_real_date} results - {new_scan_results}")
         
         fixed_vulnerabilities = SAST_api.SAST_compare_scan_vulnerabilities(old_scan_results, new_scan_results)
-        print(f"create_sast_comparison.SAST_compare_two_scans_by_date : Fixed vulnerabilities {fixed_vulnerabilities}")
-        print(f"create_sast_comparison.SAST_compare_two_scans_by_date : Scans comparison for project '{project_name}' successful !")
+        print(f"create_sast_comparison.SAST_compare_two_scans_by_date: Fixed vulnerabilities {fixed_vulnerabilities}")
+        print(f"create_sast_comparison.SAST_compare_two_scans_by_date: Scan comparison for project '{project_name}' completed.")
         
-        logging.info(f"create_sast_comparison.SAST_compare_two_scans_by_date : Scan comparison for project {project_name} successful.")
+        logging.info(f"create_sast_comparison.SAST_compare_two_scans_by_date: Scan comparison for project '{project_name}' completed.")
         return old_scan_results, new_scan_results, fixed_vulnerabilities
     
-        # write_scan_results_to_csv(project_name, old_scan_date, \
-        #     new_scan_date, old_scan_results, new_scan_results, fixed_vulnerabilities)
-        # print(f"CSV file written successfully for project {project_name}")
 
     except Exception as e:
         print(f"Exception: {e}")
@@ -77,7 +76,7 @@ def SAST_compare_scans_across_all_projects(access_token, SAST_api_url, old_scan_
     return all_old_scan_results, all_new_scan_results, all_fixed_vulnerabilities
         
 def SAST_write_scan_results_to_csv(project_name, old_scan_date, new_scan_date, old_scan_results, new_scan_results, fixed_vulnerabilities, write_headers=False):
-    logging.info("create_sast_comparison.SAST_write_scan_results_to_csv : Writing the results of the comparison to a CSV file.")
+    logging.info("create_sast_comparison.SAST_write_scan_results_to_csv: Writing the results of the comparison to a CSV file.")
     csv_content = io.StringIO()
     writer = csv.writer(csv_content)
     
@@ -93,29 +92,26 @@ def SAST_write_scan_results_to_csv(project_name, old_scan_date, new_scan_date, o
     
 def SAST_validate_and_parse_date(date_str):
     try:
-        logging.info("create_sast_comparison.SAST_validate_and_parse_date : Checking if date is in the correct format.")
+        logging.info("create_sast_comparison.SAST_validate_and_parse_date: Checking if date is in the correct format.")
         if not re.match(r'^\d{1,2}/\d{1,2}/\d{4}$', date_str):
-            logging.error("create_sast_comparison.SAST_validate_and_parse_date : Invalid date format. Please use the format 'DD/MM/YYYY' or 'D/M/YYYY'")
+            logging.error("create_sast_comparison.SAST_validate_and_parse_date: Invalid date format. Please use the format 'DD/MM/YYYY'")
             print(f"Invalid date format: {date_str}. Please use the format 'DD/MM/YYYY' or 'D/M/YYYY'.")
             return None
 
         day, month, year = map(int, date_str.split('/'))
-        
-        current_year = datetime.datetime.now().year
-        if year < 1900 or year > current_year:
-            logging.error(f"create_sast_comparison.SAST_validate_and_parse_date : Year is out of acceptable range. (1900-{current_year})")
-            print(f"Year {year} is out of the acceptable range (1900-{current_year}).")
-            return None
-
         parsed_date = datetime.datetime(year, month, day)
 
+        current_date = datetime.datetime.now().date()
+        if parsed_date.date() > current_date:
+            logging.error("create_sast_comparison.SAST_validate_and_parse_date: Date cannot be in the future.")
+            print(f"Invalid date: {date_str}. Date cannot be in the future.")
+            return None
+        
         return parsed_date.date()
 
     except (ValueError, TypeError):
         print(f"Invalid date: {date_str}. Please provide a valid date in the format 'DD/MM/YYYY'.")
         return None
-    
-    
     
     
 def SAST_compare_all_latest_vulnerabilities(SAST_username, SAST_password, SAST_auth_url, SAST_api_url):
@@ -126,7 +122,6 @@ def SAST_compare_all_latest_vulnerabilities(SAST_username, SAST_password, SAST_a
         
         projects = SAST_api.SAST_get_projects(access_token, SAST_api_url)
         project_names = [project['name'] for project in projects]
-        #print(project_names)
         
         project_names_and_last_scan_ids = {project_name : SAST_api.SAST_get_project_latest_scan_id(access_token=access_token, project_name=project_name, \
             SAST_api_url=SAST_api_url) for project_name in project_names}
@@ -135,7 +130,6 @@ def SAST_compare_all_latest_vulnerabilities(SAST_username, SAST_password, SAST_a
             project_names_and_last_scans[project_name] = SAST_api.SAST_list_scan_vulnerabilities_with_scan_id(access_token=access_token, \
                 SAST_api_url=SAST_api_url, scan_id=last_scan_id, simplified=False)
             
-        
         print(project_names_and_last_scans)
 
     

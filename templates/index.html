@@ -65,9 +65,11 @@
     </header>
     <main>
         <section>
+            <div id="loadingMessage" style="display: none;">
+                <span class="spinner"></span> Loading, Please wait...
+            </div>
             <div class="error-message" style="display: {{ 'block' if error else 'none' }}">{{ error }}</div>
-            <div id="loadingMessage" style="display: none;">Loading, Please wait...</div>
-            <div id="successMessage" style="display: none;">Scan Comparison Successful!</div>
+            <div id="successMessage" style="display: none;">Scans compared successfully!</div>
 
             <form method="POST" action="{{ url_for('compare_scans') }}" onsubmit="onSubmit(event)">
                 <div class="form-group">

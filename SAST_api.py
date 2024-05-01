@@ -55,6 +55,11 @@ def SAST_get_project_ID(access_token, project_name, SAST_api_url):
 
 def SAST_get_scan_id_by_date(access_token, project_id, SAST_api_url, scan_date, search_direction='next'):
     try:
+        if search_direction == 'next':
+            logging.info(f"SAST_api.SAST_get_scan_id_by_date: Getting the ID of the nearest scan on or after the date: {scan_date}")
+        else:
+            logging.info(f"SAST_api.SAST_get_scan_id_by_date: Getting the ID of the nearest scan on or before the date: {scan_date}")
+        
         scans_url = f"{SAST_api_url}/sast/scans?projectId={project_id}"
         headers = {
             'Authorization': f'Bearer {access_token}'
@@ -94,7 +99,7 @@ def SAST_get_scan_id_by_date(access_token, project_id, SAST_api_url, scan_date, 
     
 def SAST_list_scan_vulnerabilities_with_scan_id(access_token, SAST_api_url, scan_id, simplified=True):        
     try:
-        logging.info(f"SAST_api.SAST_list_scan_vulnerabilities_with_scan_id : Using Checkmarx API to get the results of scan with id {scan_id}.")
+        logging.info(f"SAST_api.SAST_list_scan_vulnerabilities_with_scan_id: Getting the results of scan with id {scan_id}.")
         
         headers = {'Authorization': f'Bearer {access_token}'}
 
@@ -110,6 +115,8 @@ def SAST_list_scan_vulnerabilities_with_scan_id(access_token, SAST_api_url, scan
                 'Medium': scan_results.get('mediumSeverity', 0),
                 'Low': scan_results.get('lowSeverity', 0)
             }
+            logging.info(f"Results : {simplified_scan_results}")
+            
             return simplified_scan_results
         else:
             scan_results_url = f"{SAST_api_url}/sast/scans/{scan_id}"

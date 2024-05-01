@@ -76,19 +76,63 @@ footer p {
   }
 
 .download-button {
-    display: block; /* make it a block to take full width if needed */
-    margin: 20px auto; /* center the button */
-    background-color: #007BFF; /* a nice blue shade */
-    color: white; /* white text */
-    padding: 12px 24px; /* padding for better touch */
-    border-radius: 5px; /* rounded corners */
-    text-decoration: none; /* remove underline from link */
-    text-align: center; /* center text if needed */
-    width: 50%; /* set a specific width, or use max-width */
-    transition: background-color 0.3s; /* smooth transition for hover effect */
+    display: block; 
+    margin: 20px auto; 
+    background-color: #007BFF; 
+    color: white; 
+    padding: 12px 24px;
+    border-radius: 5px;
+    text-decoration: none;
+    text-align: center;
+    width: 50%;
+    transition: background-color 0.3s;
 }
 
 .download-button:hover {
-    background-color: #0056b3; /* darker blue on hover */
+    background-color: #0056b3;
     color: #ffffff;
+}
+
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    border-top-color: #333;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  #loadingMessage {
+    color: #007bff;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #successMessage {
+    display: none;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #28a745;
+    background-color: #eaffea;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 0px;
 }
