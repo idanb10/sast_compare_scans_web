@@ -2,6 +2,7 @@
 
 import requests
 import datetime
+import logging
 
 def SAST_get_access_token(SAST_username, SAST_password, SAST_auth_url):
     try:
@@ -93,9 +94,9 @@ def SAST_get_scan_id_by_date(access_token, project_id, SAST_api_url, scan_date, 
     
 def SAST_list_scan_vulnerabilities_with_scan_id(access_token, SAST_api_url, scan_id, simplified=True):        
     try:
+        logging.info(f"SAST_api.SAST_list_scan_vulnerabilities_with_scan_id : Using Checkmarx API to get the results of scan with id {scan_id}.")
         
         headers = {'Authorization': f'Bearer {access_token}'}
-        
 
         if simplified:
             scan_results_url = f"{SAST_api_url}/sast/scans/{scan_id}/resultsStatistics"
