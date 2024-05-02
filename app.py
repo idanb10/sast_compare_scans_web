@@ -27,8 +27,16 @@ def index():
 
 @app.route('/compare', methods=['POST'])
 def compare_scans():
+    logging.info("\n" + "-" * 50)
+    logging.info("Starting a new comparison.")
+    logging.info(f"app.compare_scans: Handling POST /compare request.")
     
-    logging.info(f"\n\napp.compare_scans: Handling POST /compare request.")
+    access_token = SAST_api.SAST_get_access_token(SAST_username, SAST_password, SAST_auth_url)
+    if not access_token:
+        error_message = "Failed to obtain access token."
+        logging.error("app.compare_scans: Failed to obtain access token. Please check the 'config_rep.yaml' for correct SAST credentials.")
+        print(error_message)
+        return jsonify({"error": error_message})
     
     project_name = request.form['project_name']
     old_scan_date_str = request.form['old_scan_date']
@@ -39,13 +47,7 @@ def compare_scans():
     old_scan_date = create_sast_comparison.SAST_validate_and_parse_date(old_scan_date_str)
     new_scan_date = create_sast_comparison.SAST_validate_and_parse_date(new_scan_date_str)
     
-    access_token = SAST_api.SAST_get_access_token(SAST_username, SAST_password, SAST_auth_url)
-    if not access_token:
-        error_message = "Failed to obtain access token."
-        logging.error("app.compare_scans: Failed to obtain access token.")
-        print(error_message)
-        return jsonify({"error": error_message})
-    
+
     if old_scan_date is None or new_scan_date is None:
         error_message = "One or more dates are invalid. Please use the format 'DD/MM/YYYY'."
         logging.error(f"app.compare_scans: {error_message}")
@@ -59,7 +61,7 @@ def compare_scans():
         return jsonify({"error": error_message})        
 
     if project_name:
-        logging.info(f"app.compare_scans: Checking if project '{project_name}' exists under your username.")
+        logging.info(f"app.compare_scans: Checking if project '{project_name}' exists under your credentials.")
         project_found = False
         projects = SAST_api.SAST_get_projects(access_token=access_token, SAST_api_url=SAST_api_url)
         for project in projects:
@@ -78,10 +80,10 @@ def compare_scans():
     csv_filename = ""
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     
-    logging.info("app.compare_scans: Comparing scans to create a CSV file...")
+    logging.info("app.compare_scans: Checking if project name was provided.")
     try:
         if project_name:
-            logging.info(f"app.compare_scans: Project name was provided. Comparing scans for project '{project_name}'.")
+            logging.info(f"app.compare_scans: Project name was provided. Preparing to compare scans for project '{project_name}'.")
             
             old_scan_results, new_scan_results, fixed_vulnerabilities = create_sast_comparison.SAST_compare_two_scans_by_date(access_token, SAST_api_url, \
                 project_name, old_scan_date_str, new_scan_date_str)
@@ -92,7 +94,7 @@ def compare_scans():
                 new_scan_results, fixed_vulnerabilities, write_headers=True)
             csv_filename = f'SAST_Comparison_for_Project_{project_name}_{old_scan_date_str}_to_{new_scan_date_str}__{timestamp}.csv'
         else:
-            logging.info("app.compare_scans: Project name was not provided. Comparing scans for all projects.")
+            logging.info("app.compare_scans: Project name was not provided. Preparing to compare scans for all projects.")
             
             all_old_scan_results, all_new_scan_results, all_fixed_vulnerabilities = create_sast_comparison.SAST_compare_scans_across_all_projects(access_token,\
                 SAST_api_url, old_scan_date_str, new_scan_date_str)
@@ -116,6 +118,7 @@ def compare_scans():
             csv_filename = f'SAST_Comparison_{old_scan_date_str}_to_{new_scan_date_str}__{timestamp}.csv'
         
         logging.info("app.compare_scans: CSV file written successfully.")
+        print("app.compare_scans: CSV file written successfully.")
         
         response = make_response((csv_content, 200, {'Content-Disposition': f'attachment; filename={csv_filename}', 'Content-Type': 'text/csv'}))
         return response

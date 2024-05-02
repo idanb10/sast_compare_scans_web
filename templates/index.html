@@ -7,17 +7,17 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         function onSubmit(event) {
-            event.preventDefault(); // Prevent the default form submission
+            event.preventDefault();
     
             const errorDiv = document.querySelector('.error-message');
             const loadingDiv = document.getElementById('loadingMessage');
             const successDiv = document.getElementById('successMessage');
     
             if (errorDiv) {
-                errorDiv.style.display = 'none'; // Hide error message when resubmitting
+                errorDiv.style.display = 'none';
             }
-            loadingDiv.style.display = 'block'; // Show loading message
-            successDiv.style.display = 'none'; // Ensure success message is hidden initially
+            loadingDiv.style.display = 'block';
+            successDiv.style.display = 'none';
     
             const formData = new FormData(event.target);
     
@@ -28,21 +28,17 @@
                 processData: false,
                 contentType: false,
                 success: function(response, status, xhr) {
-                    loadingDiv.style.display = 'none'; // Hide loading message
+                    loadingDiv.style.display = 'none';
     
                     if (response.error) {
-                        // If there is an error message in the response, display it
                         errorDiv.textContent = response.error;
                         errorDiv.style.display = 'block';
                     } else {
-                        // If the response is successful, show the success message and trigger the file download
-                        successDiv.style.display = 'block'; // Show success message
+                        successDiv.style.display = 'block';
     
-                        // Extract the filename from the response headers
                         const contentDisposition = xhr.getResponseHeader('Content-Disposition');
                         const filename = contentDisposition.split('filename=')[1].trim().replace(/"/g, '');
     
-                        // Create a temporary link element to trigger the file download
                         const link = document.createElement('a');
                         link.href = URL.createObjectURL(new Blob([response]));
                         link.download = filename;
@@ -50,9 +46,9 @@
                     }
                 },
                 error: function(xhr, status, error) {
-                    loadingDiv.style.display = 'none'; // Hide loading message
+                    loadingDiv.style.display = 'none';
                     errorDiv.textContent = 'An error occurred during scan comparison.';
-                    errorDiv.style.display = 'block'; // Show error message
+                    errorDiv.style.display = 'block';
                 }
             });
         }
