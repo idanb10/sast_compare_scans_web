@@ -1,6 +1,7 @@
 #app.py
 
-from flask import Flask, jsonify, make_response, render_template, request, send_from_directory
+from flask import Flask, jsonify, make_response, render_template, request
+from markupsafe import escape
 import yaml
 import create_sast_comparison
 import SAST_api
@@ -38,9 +39,9 @@ def compare_scans():
         print(error_message)
         return jsonify({"error": error_message})
     
-    project_name = request.form['project_name']
-    old_scan_date_str = request.form['old_scan_date']
-    new_scan_date_str = request.form['new_scan_date']
+    project_name = escape(request.form['project_name'])
+    old_scan_date_str = escape(request.form['old_scan_date'])
+    new_scan_date_str = escape(request.form['new_scan_date'])
     
     logging.info(f"app.compare_scans: Validating user input...")
     

@@ -119,28 +119,5 @@ def SAST_validate_and_parse_date(date_str):
         print(f"Invalid date: {date_str}. Please provide a valid date in the format 'DD/MM/YYYY'.")
         return None
     
-def SAST_compare_all_latest_vulnerabilities(SAST_username, SAST_password, SAST_auth_url, SAST_api_url):
-    try:
-        access_token = SAST_api.SAST_get_access_token(SAST_username, SAST_password, SAST_auth_url)
-        if not access_token:
-            raise Exception("Failed to obtain access token")
-        
-        projects = SAST_api.SAST_get_projects(access_token, SAST_api_url)
-        project_names = [project['name'] for project in projects]
-        
-        project_names_and_last_scan_ids = {project_name : SAST_api.SAST_get_project_latest_scan_id(access_token=access_token, project_name=project_name, \
-            SAST_api_url=SAST_api_url) for project_name in project_names}
-        project_names_and_last_scans = {}
-        for project_name, last_scan_id in project_names_and_last_scan_ids.items():
-            project_names_and_last_scans[project_name] = SAST_api.SAST_list_scan_vulnerabilities_with_scan_id(access_token=access_token, \
-                SAST_api_url=SAST_api_url, scan_id=last_scan_id, simplified=False)
-            
-        print(project_names_and_last_scans)
-        
-    except Exception as e:
-        print(f"Exception: {e}")
-        return None
-        
-    
         
     
