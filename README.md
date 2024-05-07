@@ -33,38 +33,44 @@ venv\Scripts\activate
 source venv/bin/activate 
 ```
 
-3. Install the required Python packages:
+3. Install the required Python packages (required):
 ```
 pip install -r requirements.txt
 ```
 
 ### Configuration
 
-- Rename config_rep_template.yaml to config_rep.yaml.
-- Update config_rep.yaml with your Checkmarx SAST credentials and endpoints.
+- Update `config_rep.yaml` with your Checkmarx SAST credentials and server name.
+- Add the report server name and port where you want the Flask application to run.
 
 ### Running the Application
 
-1. Configure the server's IP address and port by editing `app.py`. You can find the configuration at the bottom of the file:
+1. Configure the server's IP address and port by editing the `config_rep.yaml` file:
 
 ```
-if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
+report_server_name = 127.0.0.1
+port = 5000
 ```
-- You can change `host` and `port` as needed. For example, to allow access from any machine on the network, set host to `0.0.0.0`.
+-  You can change `report_server_name` and `port` as needed. For example, to allow access from any machine on the network, set `report_server_name` (host) to `0.0.0.0`.
 
-2. Start the server:
+2. In production environment, set `debug` to `False`:
+```
+debug=False
+```
+
+3. Start the server:
 ```
 python app.py
 ```
 
-3. Access the application via your browser at the configured IP address and port, for example:
+4. Access the application via your browser at the configured IP address and port, for example:
 
 ```
 http://127.0.0.1:5000/
 ```
 
-- If you changed the host to `0.0.0.0` and are accessing from another machine, replace `127.0.0.1` with the IP address of the machine running the server.
+- If you changed the report_server_name (host) to `0.0.0.0` and are accessing from another machine, replace `127.0.0.1` with the IP address of the machine running the server.
+
 
 ### Usage
 

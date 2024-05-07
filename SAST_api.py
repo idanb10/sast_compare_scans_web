@@ -19,14 +19,14 @@ def SAST_get_access_token(SAST_username, SAST_password, SAST_auth_url):
             'Content-Type': 'application/x-www-form-urlencoded'
         }
 
-        response = requests.post(SAST_auth_url, headers=headers, data=payload)
+        response = requests.post(SAST_auth_url, headers=headers, data=payload, verify=False)
         response.raise_for_status()
         access_token = response.json()['access_token']
         logging.info("SAST_api.SAST_get_access_token: Access token obtained.")
         return access_token
     except requests.exceptions.RequestException as e:
         logging.error(f"SAST_api.SAST_get_access_token: Failed to obtain access token for user '{SAST_username}'")
-        print(f"Exception: get SAST access token failed: {e}")
+        #print(f"Exception: get SAST access token failed: {e}")
         return ""
 
 def SAST_get_projects(access_token, SAST_api_url):
@@ -37,12 +37,12 @@ def SAST_get_projects(access_token, SAST_api_url):
 
         url = f'{SAST_api_url}/projects'
 
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, verify=False)
         response.raise_for_status()
         
         return response.json()
     except requests.exceptions.RequestException as e:
-        print(f"Exception: SAST_get_projects: {e}")
+        #print(f"Exception: SAST_get_projects: {e}")
         return ""
     
 def SAST_get_project_ID(access_token, project_name, SAST_api_url):
@@ -50,7 +50,7 @@ def SAST_get_project_ID(access_token, project_name, SAST_api_url):
         projects = SAST_get_projects(access_token, SAST_api_url)
         projId = next((project['id'] for project in projects if project['name'] == project_name), 0)
     except Exception as e:
-        print(f"Exception: SAST_get_project_ID: {e}")
+        #print(f"Exception: SAST_get_project_ID: {e}")
         return ""
     return projId
 
@@ -65,7 +65,7 @@ def SAST_get_scan_id_by_date(access_token, project_id, SAST_api_url, scan_date, 
         headers = {
             'Authorization': f'Bearer {access_token}'
         }
-        response = requests.get(scans_url, headers=headers)
+        response = requests.get(scans_url, headers=headers, verify=False)
         response.raise_for_status()
 
         project_scans = response.json()
@@ -89,13 +89,14 @@ def SAST_get_scan_id_by_date(access_token, project_id, SAST_api_url, scan_date, 
                         
 
         if selected_scan_id and selected_scan_date:
-            print(f"SAST_api.SAST_get_scan_id_by_date : Selected scan id = {selected_scan_id}, selected scan date = {selected_scan_date}")
+            #print(f"SAST_api.SAST_get_scan_id_by_date : Selected scan id = {selected_scan_id}, selected scan date = {selected_scan_date}")
             return selected_scan_id, selected_scan_date
         else:
             return None, None
         
     except Exception as e:
-        print(f"Exception: SAST_get_scan_id_by_date: {e}")
+        #print(f"Exception: SAST_get_scan_id_by_date: {e}")
+        logging.error(f"SAST_api.SAST_get_scan_id_by_date: {e}")
         return None, None
     
 def SAST_list_scan_vulnerabilities_with_scan_id(access_token, SAST_api_url, scan_id):        
@@ -103,11 +104,10 @@ def SAST_list_scan_vulnerabilities_with_scan_id(access_token, SAST_api_url, scan
         logging.info(f"SAST_api.SAST_list_scan_vulnerabilities_with_scan_id: Getting the results of scan with id {scan_id}.")
         
         headers = {'Authorization': f'Bearer {access_token}'}
-
         
         scan_results_url = f"{SAST_api_url}/sast/scans/{scan_id}/resultsStatistics"
                 
-        response = requests.get(scan_results_url, headers=headers)
+        response = requests.get(scan_results_url, headers=headers, verify=False)
         response.raise_for_status()
         scan_results = response.json()
         
@@ -122,7 +122,8 @@ def SAST_list_scan_vulnerabilities_with_scan_id(access_token, SAST_api_url, scan
 
         
     except Exception as e:
-        print(f"Exception: {e}")
+        #print(f"Exception: {e}")
+        logging.error(f"SAST_api.SAST_list_scan_vulnerabilities_with_scan_id: {e}")
         return ""            
 
 def SAST_compare_scan_vulnerabilities(old_scan_results, new_scan_results):
@@ -147,16 +148,15 @@ def SAST_get_project_latest_scan_id(access_token, project_name, SAST_api_url):
             'Authorization': f'Bearer {access_token}'
         }
 
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, verify=False)
         response.raise_for_status()
         
         response_json = response.json()
         lastScanId = response_json[0]['id']
     except Exception as e:
-        print(f"Exception: SAST_get_project_latest_scan_id: {e}")
+        #print(f"Exception: SAST_get_project_latest_scan_id: {e}")
         return ""
     else:
-        print(f'SAST_get_project_latest_scan_id scan_id= {lastScanId}')
+        #print(f'SAST_get_project_latest_scan_id scan_id= {lastScanId}')
         return lastScanId
-    
     

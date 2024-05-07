@@ -5,7 +5,6 @@ from markupsafe import escape
 import yaml
 import create_sast_comparison
 import SAST_api
-import os
 import datetime
 import logging
 
@@ -16,13 +15,18 @@ with open('config_rep.yaml', 'r') as file:
 
 SAST_username = config['SAST_username']
 SAST_password = config['SAST_password']
-SAST_auth_url = config['SAST_auth_url']
-SAST_api_url = config['SAST_api_url']
+SAST_server_name = config['SAST_server_name']
+report_server_name = config['report_server_name']
+port = config['port']
+debug = config['debug']
+SAST_auth_url = f"{SAST_server_name}/CxRestAPI/auth/identity/connect/token"
+SAST_api_url = f"{SAST_server_name}/CxRestAPI"
 
 app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def index():
+    print(f"{datetime.datetime.now()} - Program starting... check the app.log file for the application's flow, actual scan dates, warnings, and errors.")
     logging.info("app.index: Handling GET / request.")
     return render_template('index.html')
 
@@ -36,7 +40,7 @@ def compare_scans():
     if not access_token:
         error_message = "Failed to obtain access token."
         logging.error("app.compare_scans: Failed to obtain access token. Please check the 'config_rep.yaml' for correct SAST credentials.")
-        print(error_message)
+        #print(error_message)
         return jsonify({"error": error_message})
     
     project_name = escape(request.form['project_name'])
@@ -52,15 +56,17 @@ def compare_scans():
     if old_scan_date is None or new_scan_date is None:
         error_message = "One or more dates are invalid. Please use the format 'DD/MM/YYYY'."
         logging.error(f"app.compare_scans: {error_message}")
-        print(error_message)
+        #print(error_message)
         return jsonify({"error": error_message})
 
     if old_scan_date > new_scan_date:
         error_message = "The old scan date should be earlier than the new scan date."
         logging.error(f"app.compare_scans: {error_message}")
-        print(error_message)
-        return jsonify({"error": error_message})        
-
+        #print(error_message)
+        return jsonify({"error": error_message})       
+    
+    logging.info("app.compare_scans: Checking if project name was provided.")
+ 
     if project_name:
         logging.info(f"app.compare_scans: Checking if project '{project_name}' exists under your credentials.")
         project_found = False
@@ -72,7 +78,7 @@ def compare_scans():
         if project_found == False:
             error_message = f"No project named '{project_name}' was found."
             logging.error(f"app.compare_scans: {error_message}")
-            print(error_message)
+            #print(error_message)
             return jsonify({"error": error_message})
     
     old_scan_date_str = old_scan_date.strftime('%Y-%m-%d')
@@ -81,7 +87,6 @@ def compare_scans():
     csv_filename = ""
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     
-    logging.info("app.compare_scans: Checking if project name was provided.")
     try:
         if project_name:
             logging.info(f"app.compare_scans: Project name was provided. Preparing to compare scans for project '{project_name}'.")
@@ -119,7 +124,7 @@ def compare_scans():
             csv_filename = f'SAST_Comparison_{old_scan_date_str}_to_{new_scan_date_str}__{timestamp}.csv'
         
         logging.info("app.compare_scans: CSV file written successfully.")
-        print("app.compare_scans: CSV file written successfully.")
+        #print("app.compare_scans: CSV file written successfully.")
         
         response = make_response((csv_content, 200, {'Content-Disposition': f'attachment; filename={csv_filename}', 'Content-Type': 'text/csv'}))
         return response
@@ -129,4 +134,4 @@ def compare_scans():
         return render_template('index.html', error=error_message)
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(host=report_server_name, port=port, debug=debug)

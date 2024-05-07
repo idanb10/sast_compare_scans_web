@@ -1,0 +1,8 @@
+# Configuration file
+SAST_username: <your_username>
+SAST_password: <your_password>
+SAST_server_name: <SAST_server_name>  # Base URL of the SAST server
+
+report_server_name: 127.0.0.1  # Hostname or IP address of the report server
+port: 5000                     # Port on which the Flask app will run
+debug: True                    # Set to True to enable debug mode, which provides detailed error logs and live reloading. In production, set it to False.
