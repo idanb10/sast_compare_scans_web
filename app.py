@@ -2,10 +2,11 @@
 
 from flask import Flask, jsonify, make_response, render_template, request
 from markupsafe import escape
+from dateutil.relativedelta import relativedelta
+import datetime
 import yaml
 import create_sast_comparison
 import SAST_api
-import datetime
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename='app.log', filemode='a')
@@ -28,7 +29,14 @@ app = Flask(__name__)
 def index():
     print(f"{datetime.datetime.now()} - Program starting... check the app.log file for the application's flow, actual scan dates, warnings, and errors.")
     logging.info("app.index: Handling GET / request.")
-    return render_template('index.html')
+    
+    current_date = datetime.datetime.now()
+    one_month_ago = current_date - relativedelta(months=1)
+    
+    current_date_str = current_date.strftime("%d/%m/%Y")
+    one_month_ago_str = one_month_ago.strftime("%d/%m/%Y")
+
+    return render_template('index.html', default_new_date=current_date_str, default_old_date=one_month_ago_str)
 
 @app.route('/compare', methods=['POST'])
 def compare_scans():
