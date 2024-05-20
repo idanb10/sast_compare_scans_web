@@ -49,12 +49,12 @@ def SAST_compare_two_scans_by_date(access_token, SAST_api_url, project_name, old
         #print(f"create_sast_comparison.SAST_compare_two_scans_by_date: Scan comparison for project '{project_name}' completed.")
         
         logging.info(f"create_sast_comparison.SAST_compare_two_scans_by_date: Scan comparison for project '{project_name}' completed.")
-        return old_scan_results, new_scan_results, fixed_vulnerabilities
+        return old_scan_results, new_scan_results, fixed_vulnerabilities, old_scan_real_date, new_scan_real_date
     
 
     except Exception as e:
         #print(f"Exception: {e}")
-        return None, None, None
+        return None, None, None, None, None
     
 def SAST_compare_scans_across_all_projects(access_token, SAST_api_url, old_scan_date, new_scan_date):
     
@@ -64,30 +64,34 @@ def SAST_compare_scans_across_all_projects(access_token, SAST_api_url, old_scan_
     all_old_scan_results = {}
     all_new_scan_results = {}
     all_fixed_vulnerabilities = {}
-    
+    all_old_scan_dates = {}
+    all_new_scan_dates = {}
 
     for project in projects:
         project_name = project['name']
-        old_scan_results, new_scan_results, fixed_vulnerabilities = SAST_compare_two_scans_by_date(access_token, SAST_api_url, project_name, old_scan_date, new_scan_date)
+        old_scan_results, new_scan_results, fixed_vulnerabilities, old_scan_real_date, new_scan_real_date = SAST_compare_two_scans_by_date(access_token, SAST_api_url, project_name, old_scan_date, new_scan_date)
 
         all_old_scan_results[project_name] = old_scan_results
         all_new_scan_results[project_name] = new_scan_results
         all_fixed_vulnerabilities[project_name] = fixed_vulnerabilities
+        all_old_scan_dates[project_name] = old_scan_real_date
+        all_new_scan_dates[project_name] = new_scan_real_date
 
-    return all_old_scan_results, all_new_scan_results, all_fixed_vulnerabilities
+    return all_old_scan_results, all_new_scan_results, all_fixed_vulnerabilities, all_old_scan_dates, all_new_scan_dates
         
-def SAST_write_scan_results_to_csv(project_name, old_scan_date, new_scan_date, old_scan_results, new_scan_results, fixed_vulnerabilities, write_headers=False):
+def SAST_write_scan_results_to_csv(project_name, old_scan_date, new_scan_date, old_scan_results, new_scan_results, fixed_vulnerabilities, 
+                                   old_scan_real_date, new_scan_real_date, write_headers=False):
     logging.info("create_sast_comparison.SAST_write_scan_results_to_csv: Writing the results of the comparison to a CSV file.")
     csv_content = io.StringIO()
     writer = csv.writer(csv_content)
     
     if write_headers:
-        writer.writerow(['', 'fixed', '', '', old_scan_date, '', '', new_scan_date, '', ''])
-        writer.writerow(['project', 'high', 'medium', 'low', 'high', 'medium', 'low', 'high', 'medium', 'low'])
+        writer.writerow(['', 'fixed', '', '', old_scan_date, '', '', '', new_scan_date, '', ''])
+        writer.writerow(['project', 'high', 'medium', 'low', 'high', 'medium', 'low', 'scan date', 'high', 'medium', 'low', 'scan date'])
     
     writer.writerow([project_name, fixed_vulnerabilities['High'], fixed_vulnerabilities['Medium'], fixed_vulnerabilities['Low'],
-                     old_scan_results['High'], old_scan_results['Medium'], old_scan_results['Low'],
-                     new_scan_results['High'], new_scan_results['Medium'], new_scan_results['Low']])
+                     old_scan_results['High'], old_scan_results['Medium'], old_scan_results['Low'], old_scan_real_date,
+                     new_scan_results['High'], new_scan_results['Medium'], new_scan_results['Low'], new_scan_real_date])
     
     return csv_content.getvalue()
     

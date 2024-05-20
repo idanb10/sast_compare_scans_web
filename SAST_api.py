@@ -129,9 +129,9 @@ def SAST_list_scan_vulnerabilities_with_scan_id(access_token, SAST_api_url, scan
 def SAST_compare_scan_vulnerabilities(old_scan_results, new_scan_results):
     
     fixed = {
-        'High': max(0, old_scan_results['High'] - new_scan_results['High']),
-        'Medium': max(0, old_scan_results['Medium'] - new_scan_results['Medium']),
-        'Low': max(0, old_scan_results['Low'] - new_scan_results['Low'])
+        'High': old_scan_results['High'] - new_scan_results['High'],
+        'Medium': old_scan_results['Medium'] - new_scan_results['Medium'],
+        'Low': old_scan_results['Low'] - new_scan_results['Low']
     }
     return fixed
 
