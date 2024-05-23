@@ -27,7 +27,7 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def index():
-    print(f"{datetime.datetime.now()} - Program starting... check the app.log file for the application's flow, actual scan dates, warnings, and errors.")
+    print(f"{datetime.datetime.now()} - Program starting... check the app.log file for the application's flow, warnings, and errors.")
     logging.info("app.index: Handling GET / request.")
     
     current_date = datetime.datetime.now()
@@ -64,13 +64,11 @@ def compare_scans():
     if old_scan_date is None or new_scan_date is None:
         error_message = "One or more dates are invalid. Please use the format 'DD/MM/YYYY'."
         logging.error(f"app.compare_scans: {error_message}")
-        #print(error_message)
         return jsonify({"error": error_message})
 
     if old_scan_date > new_scan_date:
         error_message = "The old scan date should be earlier than the new scan date."
         logging.error(f"app.compare_scans: {error_message}")
-        #print(error_message)
         return jsonify({"error": error_message})       
     
     logging.info("app.compare_scans: Checking if project name was provided.")
@@ -86,7 +84,6 @@ def compare_scans():
         if project_found == False:
             error_message = f"No project named '{project_name}' was found."
             logging.error(f"app.compare_scans: {error_message}")
-            #print(error_message)
             return jsonify({"error": error_message})
     
     old_scan_date_str = old_scan_date.strftime('%Y-%m-%d')
@@ -102,38 +99,55 @@ def compare_scans():
             old_scan_results, new_scan_results, fixed_vulnerabilities, old_scan_real_date, new_scan_real_date = create_sast_comparison.SAST_compare_two_scans_by_date(access_token, SAST_api_url, \
                 project_name, old_scan_date_str, new_scan_date_str)
             if old_scan_results is None or new_scan_results is None or fixed_vulnerabilities is None:
-                logging.error("app.compare_scans: Failed to compare scans for the specified project.")
-                raise Exception("Failed to compare scans for the specified project.")
+                error_message = f"No scans to compare within the specified date range for project '{project_name}'."
+                logging.error(f"app.compare_scans: {error_message}")
+                return jsonify({"error": error_message})
+            
             csv_content = create_sast_comparison.SAST_write_scan_results_to_csv(project_name, old_scan_date_str, new_scan_date_str, old_scan_results,
                 new_scan_results, fixed_vulnerabilities, old_scan_real_date, new_scan_real_date, write_headers=True)
             csv_filename = f'SAST_Comparison_for_Project_{project_name}_{old_scan_date_str}_to_{new_scan_date_str}__{timestamp}.csv'
         else:
             logging.info("app.compare_scans: Project name was not provided. Preparing to compare scans for all projects.")
             
-            all_old_scan_results, all_new_scan_results, all_fixed_vulnerabilities, all_old_scan_real_dates, all_new_scan_real_dates = create_sast_comparison.SAST_compare_scans_across_all_projects(access_token,
+            all_old_scan_results, all_new_scan_results, all_fixed_vulnerabilities, all_old_scan_real_dates, all_new_scan_real_dates, \
+                single_scans_within_date_range_results, single_scans_within_date_range_real_dates = create_sast_comparison.SAST_compare_scans_across_all_projects(access_token,
                 SAST_api_url, old_scan_date_str, new_scan_date_str)
-            
+
             if not all_old_scan_results or not all_new_scan_results or not all_fixed_vulnerabilities:
-                logging.error("Failed to compare scans across all projects.")
-                raise Exception("Failed to compare scans across all projects.")
+                error_message = "No scans to compare within the specified date range."
+                logging.error(f"app.compare_scans: {error_message}.")
+                return jsonify({"error": error_message})
             
             csv_content = ""
             write_headers = True
+            write_log = True
             for project_name in all_old_scan_results:
                 old_scan_results = all_old_scan_results[project_name]
                 new_scan_results = all_new_scan_results[project_name]
                 fixed_vulnerabilities = all_fixed_vulnerabilities[project_name]
                 old_scan_real_date = all_old_scan_real_dates[project_name]
                 new_scan_real_date = all_new_scan_real_dates[project_name]
-                
                 if old_scan_results is not None and new_scan_results is not None and fixed_vulnerabilities is not None:
+                    if write_log:
+                        logging.info("app.compare_scans: Writing the results of the scan comparison to a CSV file.")
+                        write_log = False
+                        
                     csv_content += create_sast_comparison.SAST_write_scan_results_to_csv(project_name, old_scan_date_str, new_scan_date_str, old_scan_results,
                                                                                     new_scan_results, fixed_vulnerabilities, old_scan_real_date, 
                                                                                     new_scan_real_date, write_headers=write_headers)
                     write_headers = False
                     if not csv_content.endswith("\n"):
                         csv_content += "\n"
-
+                        
+            if single_scans_within_date_range_results:
+                logging.info("app.compare_scans: Writing the results of projects that have a single scan within the specified date range to a CSV file.")
+                for project_name in single_scans_within_date_range_results:
+                    csv_content += create_sast_comparison.SAST_write_scan_results_to_csv_with_one_scan(project_name, old_scan_date_str, \
+                        single_scans_within_date_range_real_dates[project_name], single_scans_within_date_range_results[project_name], write_headers=write_headers)
+                    if not csv_content.endswith("\n"):
+                        csv_content += "\n"
+            
+            
             csv_filename = f'SAST_Comparison_{old_scan_date_str}_to_{new_scan_date_str}__{timestamp}.csv'
         
         if not csv_content:
@@ -149,6 +163,7 @@ def compare_scans():
 
     except Exception as e:
         error_message = str(e)
+        print(error_message)
         return render_template('index.html', error=error_message)
 
 if __name__ == '__main__':

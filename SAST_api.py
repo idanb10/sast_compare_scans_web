@@ -101,6 +101,10 @@ def SAST_get_scan_id_by_date(access_token, project_id, SAST_api_url, scan_date, 
     
 def SAST_list_scan_vulnerabilities_with_scan_id(access_token, SAST_api_url, scan_id):        
     try:
+        if not scan_id:
+            error_message = "SAST_api.SAST_list_scan_vulnerabilities_with_scan_id: Scan id does not exist, cannot list its vulnerabilities"
+            raise Exception(error_message)
+        
         logging.info(f"SAST_api.SAST_list_scan_vulnerabilities_with_scan_id: Getting the results of scan with id {scan_id}.")
         
         headers = {'Authorization': f'Bearer {access_token}'}
@@ -120,10 +124,9 @@ def SAST_list_scan_vulnerabilities_with_scan_id(access_token, SAST_api_url, scan
         
         return simplified_scan_results
 
-        
     except Exception as e:
         #print(f"Exception: {e}")
-        logging.error(f"SAST_api.SAST_list_scan_vulnerabilities_with_scan_id: {e}")
+        logging.warning(f"SAST_api.SAST_list_scan_vulnerabilities_with_scan_id: {e}")
         return ""            
 
 def SAST_compare_scan_vulnerabilities(old_scan_results, new_scan_results):
@@ -134,7 +137,6 @@ def SAST_compare_scan_vulnerabilities(old_scan_results, new_scan_results):
         'Low': old_scan_results['Low'] - new_scan_results['Low']
     }
     return fixed
-
 
 def SAST_get_project_latest_scan_id(access_token, project_name, SAST_api_url):
     try:

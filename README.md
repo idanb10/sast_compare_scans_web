@@ -78,9 +78,11 @@ http://127.0.0.1:5000/
 
 2. Click the `Compare Scans` button to initiate the scan comparison.
 
-3. Once the comparison is complete, a CSV file will be generated, showing the vulnerability counts for each project at the older date, newer date, and the number of vulnerabilities fixed between the two dates.
+3. Once the comparison is complete, a CSV file will be generated, showing the vulnerability counts for each project at the older date, newer date, and the number of vulnerabilities fixed between the two dates. 
+
+4. If there was only one scan for a project within that range, its results will appear at the end of the file.
 
 ### Logging
 
-The application logs its flow, actual scan dates, warnings, and errors in the app.log file.
+The application logs its flow, warnings, and errors in the app.log file.
 
