@@ -54,51 +54,6 @@ def SAST_get_project_ID(access_token, project_name, SAST_api_url):
         return ""
     return projId
 
-# def SAST_get_scan_id_by_date(access_token, project_id, SAST_api_url, scan_date, search_direction='next'):
-#     try:
-#         if search_direction == 'next':
-#             logging.info(f"SAST_api.SAST_get_scan_id_by_date: Getting the id of the nearest scan on or after the date: {scan_date}")
-#         else:
-#             logging.info(f"SAST_api.SAST_get_scan_id_by_date: Getting the id of the nearest scan on or before the date: {scan_date}")
-        
-#         scans_url = f"{SAST_api_url}/sast/scans?projectId={project_id}"
-#         headers = {
-#             'Authorization': f'Bearer {access_token}'
-#         }
-#         response = requests.get(scans_url, headers=headers, verify=False)
-#         response.raise_for_status()
-
-#         project_scans = response.json()
-        
-#         selected_scan_id = None
-#         selected_scan_date = None
-#         target_scan_date = datetime.datetime.strptime(scan_date, '%Y-%m-%d').date()
-#         closest_date = datetime.date.max if search_direction == 'next' else datetime.date.min
-        
-#         for scan in project_scans:
-#             date_and_time = scan.get('dateAndTime', {})
-#             print(date_and_time)
-#             if date_and_time:
-#                 scan_date_time_str = date_and_time.get('startedOn')
-#                 if scan_date_time_str:
-#                     scan_date_obj = datetime.datetime.strptime(scan_date_time_str, '%Y-%m-%dT%H:%M:%S.%f').date()
-#                     if (search_direction == 'next' and scan_date_obj >= target_scan_date and scan_date_obj < closest_date) or \
-#                         (search_direction == 'last' and scan_date_obj <= target_scan_date and scan_date_obj > closest_date):
-#                         closest_date = scan_date_obj
-#                         selected_scan_id = scan['id']
-#                         selected_scan_date = scan_date_obj
-                        
-
-#         if selected_scan_id and selected_scan_date:
-#             #print(f"SAST_api.SAST_get_scan_id_by_date : Selected scan id = {selected_scan_id}, selected scan date = {selected_scan_date}")
-#             return selected_scan_id, selected_scan_date
-#         else:
-#             return None, None
-        
-#     except Exception as e:
-#         #print(f"Exception: SAST_get_scan_id_by_date: {e}")
-#         logging.error(f"SAST_api.SAST_get_scan_id_by_date: {e}")
-#         return None, None
     
 def SAST_list_scan_vulnerabilities_with_scan_id(access_token, SAST_api_url, scan_id):        
     try:
